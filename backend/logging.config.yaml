@@ -1,0 +1,27 @@
+version: 1
+
+formatters:
+  default:
+    format: "%(asctime)s - %(levelname)s - %(message)s"
+
+handlers:
+  file:
+    class: logging.handlers.FileHandler
+    filename: main.log
+    formatter: default
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: default
+
+loggers:
+  uvicorn:
+    level: DEBUG
+    handlers: [console]
+  main:  # Replace with the name of your main application file (e.g., main)
+    level: DEBUG
+    handlers: [file, console]
+
+root:
+  level: DEBUG
+  handlers: [console]

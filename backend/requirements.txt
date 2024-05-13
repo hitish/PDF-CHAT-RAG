@@ -1,0 +1,17 @@
+Flask
+fastapi
+nltk
+pydantic
+uvicorn
+starlette
+faiss-cpu
+llama_index
+pypdf2
+llama-index-embeddings-huggingface
+
+llama-index-vector-stores-faiss
+llama_index.vector_stores.qdrant
+
+llama-index-extractors-entity
+qdrant_client
+fastembed
