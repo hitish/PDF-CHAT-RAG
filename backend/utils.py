@@ -1,11 +1,8 @@
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Document,Settings,StorageContext
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.llms.openai import OpenAI
 from llama_index.llms.llama_api import LlamaAPI
-
-#from llama_index.vector_stores.faiss import FaissVectorStore
-#import faiss,time,
-
+from dotenv import load_dotenv
+import os
 import asyncio
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 import qdrant_client
@@ -23,13 +20,14 @@ from llama_index.core.extractors import (
 from llama_index.core.ingestion import IngestionPipeline
 from llama_index.extractors.entity import EntityExtractor
 
+load_dotenv()
 
 model_name = "all-mpnet-base-v2"  # For text embedding
 tokenizer_name = f"{model_name}-tokenizer"  # Corresponding tokenizer
 text_embedding_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
 Settings.embed_model = text_embedding_model
 
-llm = LlamaAPI(api_key="LL-ZnKQ7YwQEisx0LN9SYDitW3woFEU5p5nuqxm7FBXw3Z8jcc9VebiLPigsE5fcvEe",model="llama-7b-chat",max_tokens=512)
+llm = LlamaAPI(api_key=os.getenv("API_KEY"),model=os.getenv("MODEL"),max_tokens=512)
 
 print(llm)
 Settings.llm=llm

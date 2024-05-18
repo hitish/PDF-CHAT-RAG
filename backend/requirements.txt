@@ -9,7 +9,6 @@ llama_index
 pypdf2
 llama-index-embeddings-huggingface
 
-llama-index-vector-stores-faiss
 llama_index.vector_stores.qdrant
 llama-index-llms-llama-api
 llama-index-program-openai
@@ -17,3 +16,5 @@ llama-index-program-openai
 llama-index-extractors-entity
 qdrant_client
 fastembed
+
+python-doten
