@@ -29,14 +29,14 @@ tokenizer_name = f"{model_name}-tokenizer"  # Corresponding tokenizer
 text_embedding_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
 Settings.embed_model = text_embedding_model
 
-llm = LlamaAPI(api_key="LL-ZnKQ7YwQEisx0LN9SYDitW3woFEU5p5nuqxm7FBXw3Z8jcc9VebiLPigsE5fcvEe",model="llama-7b-chat",max_tokens=1024)
+llm = LlamaAPI(api_key="LL-ZnKQ7YwQEisx0LN9SYDitW3woFEU5p5nuqxm7FBXw3Z8jcc9VebiLPigsE5fcvEe",model="llama-7b-chat",max_tokens=512)
 
 print(llm)
 Settings.llm=llm
 
 
 transformations = [
-    SentenceSplitter(chunk_size=1024,chunk_overlap=50),
+    SentenceSplitter(chunk_size=128,chunk_overlap=12),
     #TitleExtractor(nodes=5),
     #QuestionsAnsweredExtractor(questions=3),
     #SummaryExtractor(summaries=["prev", "self"]),

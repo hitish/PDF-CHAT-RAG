@@ -51,7 +51,7 @@ async def websocket_endpoint(websocket: WebSocket):
           index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
           print(index)
           memory = ChatMemoryBuffer.from_defaults(token_limit=4096)
-          chat_engine = index.as_chat_engine(chat_mode="condense_plus_context",memory=memory,  verbose = True, )
+          chat_engine = index.as_chat_engine(chat_mode="context",memory=memory,  verbose = True, )
 
         if "text" in json_data:
           chat_hist = chat_hist_copy.copy()
