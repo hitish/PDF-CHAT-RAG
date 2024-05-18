@@ -4,12 +4,14 @@ import utils
 from starlette.websockets import  WebSocket,WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from llama_index.core import VectorStoreIndex,load_index_from_storage,StorageContext
+from llama_index.core.llms import ChatMessage, MessageRole
 #from llama_index.vector_stores.faiss import FaissVectorStore
 import logging
 import json,os,time
 import base64
 
 from llama_index.vector_stores.qdrant import QdrantVectorStore
+from llama_index.core.memory import ChatMemoryBuffer
 import qdrant_client
 
 logger = logging.getLogger("main")
@@ -31,45 +33,33 @@ app.add_middleware(
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
   await websocket.accept()
-  #print(websocket.session)
   connected_clients.append(websocket)
-  index = None
+  chat_engine = None
+  chat_hist = []
+  chat_hist_copy = []
   try:
     while True:
       data = await websocket.receive_text()
       return_json = {"response":"error"}
       if(data):
         json_data = json.loads(data)
-        if index is None:
-          client = qdrant_client.QdrantClient(
-          # you can use :memory: mode for fast and light-weight experiments,
-          # it does not require to have Qdrant deployed anywhere
-          # but requires qdrant-client >= 1.1.1
-          # location=":memory:"
-          # otherwise set Qdrant instance address with:
-          # url="http://:"
-          # otherwise set Qdrant instance with host and port:
-          host="localhost",
-          port=6333
-          # set API KEY for Qdrant Cloud
-          # api_key="",
-          )
-          vector_store = QdrantVectorStore(client=client, collection_name=json_data["chatname"])
+        if chat_engine is None:
+          aclient = qdrant_client.AsyncQdrantClient(host="localhost",port=6333)
+          client = qdrant_client.QdrantClient( host="localhost", port=6333 )
+
+          vector_store = QdrantVectorStore(client=client,aclient=aclient, collection_name=json_data["chatname"].lower().replace(" ","_"))
           index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
           print(index)
-          retriever = index.as_retriever()
-          response = retriever.retrieve(json_data["text"])
-          print(response)
+          memory = ChatMemoryBuffer.from_defaults(token_limit=4096)
+          chat_engine = index.as_chat_engine(chat_mode="condense_plus_context",memory=memory,  verbose = True, )
 
         if "text" in json_data:
-          #if index is not None:
-            #message = json_data["text"]
-            response_msg = utils.process_message(json_data,index)
-            return_json = {"user":"bot","text":response_msg}
-            print(return_json)
-          #else:
-           # return_json = {"user":"bot","text":"Fi le data is not uploaded please upload data first"}
-        
+          chat_hist = chat_hist_copy.copy()
+          response_msg = await utils.process_message(json_data,chat_hist,chat_engine)
+          chat_hist_copy.append(ChatMessage(role=MessageRole.USER,content=json_data["text"],  ))
+          chat_hist_copy.append(ChatMessage(role=MessageRole.ASSISTANT,content=response_msg,  ))
+          return_json = {"user":"bot","text":response_msg}
+          
         await websocket.send_json(return_json)
         print(return_json)
       

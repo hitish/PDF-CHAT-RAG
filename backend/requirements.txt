@@ -11,6 +11,8 @@ llama-index-embeddings-huggingface
 
 llama-index-vector-stores-faiss
 llama_index.vector_stores.qdrant
+llama-index-llms-llama-api
+llama-index-program-openai
 
 llama-index-extractors-entity
 qdrant_client

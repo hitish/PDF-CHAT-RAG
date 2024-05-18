@@ -14,9 +14,9 @@ function ChatApp({ ws,chatname }) {
       {
         console.log("this is first message to be printed");
         const msg = "Hello, your chat " + chatname + " is set up. ";
-        const first_message = {user:'bot',text:msg};
+        const first_message = {user:'bot',chatname:chatname,text:msg};
         setMessages([...messages, first_message]);
-        const second_message = {user:'bot',text:"You can ask questions related to file shared "};
+        const second_message = {user:'bot',chatname:chatname,text:"You can ask questions related to file shared "};
         setMessages((prevMessages) => [...prevMessages, second_message]);
       }
     

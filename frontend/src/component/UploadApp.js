@@ -1,11 +1,14 @@
 import React,  { useState, useEffect } from 'react';
+import { QdrantClient } from "@qdrant/js-client-rest";
 //import Path from 'path';
+
+const client = new QdrantClient("http://localhost:6333");
 
 function UploadApp({ws,setchatnamefn}) {
 
     const [chatname, setchatname] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
-    
+    const [collections, setCollections] = useState([]);
       
     const handleFileChange = (event) => {
         const file = event.target.files[0];
@@ -26,6 +29,13 @@ function UploadApp({ws,setchatnamefn}) {
                         setchatnamefn(chatname);
                     };
                 }
+      const fetchCollections = async () => {
+        const response = await client.getCollections();
+        console.log(response);
+        setCollections(response.collections);
+      };
+  
+      fetchCollections();
             
     }, [ws]);
 
@@ -83,6 +93,15 @@ function UploadApp({ws,setchatnamefn}) {
             
           </form>
         </div>
+        <div>
+      <h1>click available collections to start Chat:</h1>
+      <ul>
+        {collections.map((collection) => (
+          
+          <li key={collection.name} onClick={() =>setchatnamefn(collection.name)}>{collection.name}</li>
+        ))}
+      </ul>
+       </div>
       </div>
     );
   }

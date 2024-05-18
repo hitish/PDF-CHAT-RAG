@@ -1,5 +1,7 @@
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Document,Settings,StorageContext
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.llms.openai import OpenAI
+from llama_index.llms.llama_api import LlamaAPI
 
 #from llama_index.vector_stores.faiss import FaissVectorStore
 #import faiss,time,
@@ -22,15 +24,19 @@ from llama_index.core.ingestion import IngestionPipeline
 from llama_index.extractors.entity import EntityExtractor
 
 
-
 model_name = "all-mpnet-base-v2"  # For text embedding
 tokenizer_name = f"{model_name}-tokenizer"  # Corresponding tokenizer
 text_embedding_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
 Settings.embed_model = text_embedding_model
 
+llm = LlamaAPI(api_key="LL-ZnKQ7YwQEisx0LN9SYDitW3woFEU5p5nuqxm7FBXw3Z8jcc9VebiLPigsE5fcvEe",model="llama-7b-chat",max_tokens=1024)
+
+print(llm)
+Settings.llm=llm
+
 
 transformations = [
-    SentenceSplitter(chunk_size=512,chunk_overlap=50),
+    SentenceSplitter(chunk_size=1024,chunk_overlap=50),
     #TitleExtractor(nodes=5),
     #QuestionsAnsweredExtractor(questions=3),
     #SummaryExtractor(summaries=["prev", "self"]),
@@ -38,36 +44,17 @@ transformations = [
     #EntityExtractor(prediction_threshold=0.5),
 ]
 
-def process_message(json_data,index):
-  chatname = json_data["chatname"]
-  query = json_data["text"]
- 
-  #print("index is")
-  #print(index)
-  if index is None:
-    print("in no index loop")
-    client = qdrant_client.QdrantClient(
-    # you can use :memory: mode for fast and light-weight experiments,
-    # it does not require to have Qdrant deployed anywhere
-    # but requires qdrant-client >= 1.1.1
-    # location=":memory:"
-    # otherwise set Qdrant instance address with:
-    # url="http://:"
-    # otherwise set Qdrant instance with host and port:
-    host="localhost",
-    port=6333
-    # set API KEY for Qdrant Cloud
-    # api_key="",
-    )
-    vector_store = QdrantVectorStore(client=client, collection_name=chatname)
-    index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
-    print(index)
-  chat_engine = index.as_chat_engine()
-  streaming_response = chat_engine.stream_chat(query)
-  print(streaming_response)
-  for token in streaming_response.response_gen:
-    print(token, end="")
-  return "streaming_response"
+async def process_message(json_data,chat_hist,chat_engine):
+  try:
+    query = json_data["text"]
+    print(query)
+    response = await chat_engine.achat(query,chat_history=chat_hist)
+    print(response.response)
+    return response.response
+  except Exception as error:
+    print("An exception occurred:", error)
+    return "Some error occured please try with other question"
+
 
 # Define reader function to extract text from PDF
 def read_pdf(filepath):
@@ -118,10 +105,6 @@ async def create_vector_db(directory_path,chatname):
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
     index = VectorStoreIndex(mynodes, storage_context=storage_context)
 
-    #faiss_index = faiss.IndexFlatL2(embedding_dim)
-    #faiss_vector_store = FaissVectorStore(faiss_index=faiss_index)
-    #vector_store_index = VectorStoreIndex(nodes=mynodes,vector_store_index=faiss_vector_store)
-    #vector_store_index.storage_context.persist("./store/"+chatname)
     print("vector store somewhere")
     return True
   except Exception as e:

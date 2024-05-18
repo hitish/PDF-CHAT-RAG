@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useRef } from 'react';
 import ChatApp from './component/ChatApp';
@@ -34,9 +35,9 @@ function App() {
   return (
     <div>
       
-      { true?(
+      { chatinitiated?(
       <div className="App">
-        <ChatApp ws={wsRef.current}  chatname="ruchi"  />
+        <ChatApp ws={wsRef.current}  chatname = {chatname}  />
       </div>
       ):(<div className="App">
       <UploadApp ws={wsRef.current} setchatnamefn={handlechatname} />
